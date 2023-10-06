@@ -93,12 +93,11 @@ export class Assignment2 extends Base_Scene {
     constructor() {
         super();
         this.sit_still = false;
+        this.set_colors();
     }
 
     set_colors() {
-        // TODO:  Create a class member variable to store your cube's colors.
-        // Hint:  You might need to create a member variable at somewhere to store the colors, using `this`.
-        // Hint2: You can consider add a constructor for class Assignment2, or add member variables in Base_Scene's constructor.
+        this.colors = Array.from(Array(8), () => [Math.random(), Math.random(), Math.random(), 1]);
     }
 
     make_control_panel() {
@@ -136,7 +135,7 @@ export class Assignment2 extends Base_Scene {
             : (0.025 * Math.PI) * (1 + Math.sin(2 * Math.PI * program_state.animation_time / 3000));
 
         for (let i = 0; i < 8; i++) {
-            model_transform = this.draw_box(context, program_state, model_transform, rotation_per_level, blue);
+            model_transform = this.draw_box(context, program_state, model_transform, rotation_per_level, this.colors[i]);
         }
     }
 }
