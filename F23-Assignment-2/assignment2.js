@@ -50,7 +50,10 @@ class Cube_Outline extends Shape {
 class Cube_Single_Strip extends Shape {
     constructor() {
         super("position", "normal");
-        // TODO (Requirement 6)
+        this.arrays.position = Vector3.cast(
+            [-1, 1, -1], [-1, 1, 1], [-1, -1, -1], [-1, -1, 1], [1, -1, 1], [-1, 1, 1], [1, 1, 1], [-1, 1, -1], [1, 1, -1], [-1, -1, -1], [1, -1, -1], [1, -1, 1], [1, 1, -1], [1, 1, 1],
+        );
+        this.arrays.normal = this.arrays.position;
     }
 }
 
@@ -68,6 +71,7 @@ class Base_Scene extends Scene {
         this.shapes = {
             'cube': new Cube(),
             'outline': new Cube_Outline(),
+            'strip': new Cube_Single_Strip(),
         };
 
         // *** Materials
@@ -128,12 +132,14 @@ export class Assignment2 extends Base_Scene {
         });
     }
 
-    draw_box(context, program_state, model_transform, rotation, color) {
+    draw_box(context, program_state, model_transform, rotation, color, index) {
         // Helper function for requirement 3 (see hint).
         // This should make changes to the model_transform matrix, draw the next box, and return the newest model_transform.
         // Hint:  You can add more parameters for this function, like the desired color, index of the box, etc.
         if (this.draw_outline) {
             this.shapes.outline.draw(context, program_state, model_transform, this.white, "LINES");
+        } else if (index % 2 === 1) {
+            this.shapes.strip.draw(context, program_state, model_transform, this.materials.plastic.override({ color }), "TRIANGLE_STRIP");
         } else {
             this.shapes.cube.draw(context, program_state, model_transform, this.materials.plastic.override({ color }));
         }
@@ -155,7 +161,7 @@ export class Assignment2 extends Base_Scene {
             : (0.025 * Math.PI) * (1 + Math.sin(2 * Math.PI * program_state.animation_time / 3000));
 
         for (let i = 0; i < 8; i++) {
-            model_transform = this.draw_box(context, program_state, model_transform, rotation_per_level, this.colors[i]);
+            model_transform = this.draw_box(context, program_state, model_transform, rotation_per_level, this.colors[i], i);
         }
     }
 }
