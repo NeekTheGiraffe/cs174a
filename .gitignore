@@ -1,2 +1,5 @@
 *.zip
 __MACOSX/
+
+# Temporary Word files
+**/~*.docx
