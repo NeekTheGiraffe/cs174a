@@ -90,6 +90,11 @@ export class Assignment2 extends Base_Scene {
      * This gives you a very small code sandbox for editing a simple scene, and for
      * experimenting with matrix transformations.
      */
+    constructor() {
+        super();
+        this.sit_still = false;
+    }
+
     set_colors() {
         // TODO:  Create a class member variable to store your cube's colors.
         // Hint:  You might need to create a member variable at somewhere to store the colors, using `this`.
@@ -104,16 +109,20 @@ export class Assignment2 extends Base_Scene {
             // TODO:  Requirement 5b:  Set a flag here that will toggle your outline on and off
         });
         this.key_triggered_button("Sit still", ["m"], () => {
-            // TODO:  Requirement 3d:  Set a flag here that will toggle your swaying motion on and off.
+            this.sit_still = !this.sit_still;
         });
     }
 
-    draw_box(context, program_state, model_transform) {
-        // TODO:  Helper function for requirement 3 (see hint).
-        //        This should make changes to the model_transform matrix, draw the next box, and return the newest model_transform.
+    draw_box(context, program_state, model_transform, rotation, color) {
+        // Helper function for requirement 3 (see hint).
+        // This should make changes to the model_transform matrix, draw the next box, and return the newest model_transform.
         // Hint:  You can add more parameters for this function, like the desired color, index of the box, etc.
+        this.shapes.cube.draw(context, program_state, model_transform, this.materials.plastic.override({ color }));
 
-        return model_transform;
+        return model_transform
+            .times(Mat4.translation(-1, 1, 0))
+            .times(Mat4.rotation(rotation, 0, 0, 1))
+            .times(Mat4.translation(1, 1, 0));
     }
 
     display(context, program_state) {
@@ -121,11 +130,13 @@ export class Assignment2 extends Base_Scene {
         const blue = hex_color("#1a9ffa");
         let model_transform = Mat4.identity();
 
-        // Example for drawing a cube, you can remove this line if needed
+        // 3-second period, range from [0, 0.05*Math.PI] per level
+        const rotation_per_level = this.sit_still
+            ? 0.05 * Math.PI
+            : (0.025 * Math.PI) * (1 + Math.sin(2 * Math.PI * program_state.animation_time / 3000));
+
         for (let i = 0; i < 8; i++) {
-            this.shapes.cube.draw(context, program_state, model_transform, this.materials.plastic.override({color:blue}));
-            model_transform = model_transform.times(Mat4.translation(0, 2, 0));
+            model_transform = this.draw_box(context, program_state, model_transform, rotation_per_level, blue);
         }
-        // TODO:  Draw your entire scene here.  Use this.draw_box( graphics_state, model_transform ) to call your helper.
     }
 }
