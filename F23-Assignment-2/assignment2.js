@@ -136,18 +136,20 @@ export class Assignment2 extends Base_Scene {
         // Helper function for requirement 3 (see hint).
         // This should make changes to the model_transform matrix, draw the next box, and return the newest model_transform.
         // Hint:  You can add more parameters for this function, like the desired color, index of the box, etc.
+        const drawn_transform = model_transform.times(Mat4.scale(1, 1.5, 1));
+
         if (this.draw_outline) {
-            this.shapes.outline.draw(context, program_state, model_transform, this.white, "LINES");
+            this.shapes.outline.draw(context, program_state, drawn_transform, this.white, "LINES");
         } else if (index % 2 === 1) {
-            this.shapes.strip.draw(context, program_state, model_transform, this.materials.plastic.override({ color }), "TRIANGLE_STRIP");
+            this.shapes.strip.draw(context, program_state, drawn_transform, this.materials.plastic.override({ color }), "TRIANGLE_STRIP");
         } else {
-            this.shapes.cube.draw(context, program_state, model_transform, this.materials.plastic.override({ color }));
+            this.shapes.cube.draw(context, program_state, drawn_transform, this.materials.plastic.override({ color }));
         }
 
         return model_transform
-            .times(Mat4.translation(-1, 1, 0))
+            .times(Mat4.translation(-1, 1.5, 0))
             .times(Mat4.rotation(rotation, 0, 0, 1))
-            .times(Mat4.translation(1, 1, 0));
+            .times(Mat4.translation(1, 1.5, 0));
     }
 
     display(context, program_state) {
