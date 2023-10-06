@@ -122,7 +122,10 @@ export class Assignment2 extends Base_Scene {
         let model_transform = Mat4.identity();
 
         // Example for drawing a cube, you can remove this line if needed
-        this.shapes.cube.draw(context, program_state, model_transform, this.materials.plastic.override({color:blue}));
+        for (let i = 0; i < 8; i++) {
+            this.shapes.cube.draw(context, program_state, model_transform, this.materials.plastic.override({color:blue}));
+            model_transform = model_transform.times(Mat4.translation(0, 2, 0));
+        }
         // TODO:  Draw your entire scene here.  Use this.draw_box( graphics_state, model_transform ) to call your helper.
     }
 }
