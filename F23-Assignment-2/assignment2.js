@@ -25,10 +25,25 @@ class Cube extends Shape {
 class Cube_Outline extends Shape {
     constructor() {
         super("position", "color");
-        //  TODO (Requirement 5).
         // When a set of lines is used in graphics, you should think of the list entries as
         // broken down into pairs; each pair of vertices will be drawn as a line segment.
         // Note: since the outline is rendered with Basic_shader, you need to redefine the position and color of each vertex
+        this.arrays.position = Vector3.cast(
+            [-1, -1, 1], [-1, -1, -1],
+            [-1, -1, -1], [1, -1, -1],
+            [1, -1, -1], [1, -1, 1],
+            [1, -1, 1], [-1, -1, 1],
+            [-1, -1, 1], [-1, 1, 1],
+            [-1, -1, -1], [-1, 1, -1],
+            [1, -1, -1], [1, 1, -1],
+            [1, -1, 1], [1, 1, 1],
+            [-1, 1, 1], [-1, 1, -1],
+            [-1, 1, -1], [1, 1, -1],
+            [1, 1, -1], [1, 1, 1],
+            [1, 1, 1], [-1, 1, 1],
+        );
+        this.arrays.color = Array(this.arrays.position.length).fill([1, 1, 1, 1]);
+        this.indices = false;
     }
 }
 
@@ -93,6 +108,7 @@ export class Assignment2 extends Base_Scene {
     constructor() {
         super();
         this.sit_still = false;
+        this.draw_outline = false;
         this.set_colors();
     }
 
@@ -105,7 +121,7 @@ export class Assignment2 extends Base_Scene {
         this.key_triggered_button("Change Colors", ["c"], this.set_colors);
         // Add a button for controlling the scene.
         this.key_triggered_button("Outline", ["o"], () => {
-            // TODO:  Requirement 5b:  Set a flag here that will toggle your outline on and off
+            this.draw_outline = !this.draw_outline;
         });
         this.key_triggered_button("Sit still", ["m"], () => {
             this.sit_still = !this.sit_still;
@@ -116,7 +132,11 @@ export class Assignment2 extends Base_Scene {
         // Helper function for requirement 3 (see hint).
         // This should make changes to the model_transform matrix, draw the next box, and return the newest model_transform.
         // Hint:  You can add more parameters for this function, like the desired color, index of the box, etc.
-        this.shapes.cube.draw(context, program_state, model_transform, this.materials.plastic.override({ color }));
+        if (this.draw_outline) {
+            this.shapes.outline.draw(context, program_state, model_transform, this.white, "LINES");
+        } else {
+            this.shapes.cube.draw(context, program_state, model_transform, this.materials.plastic.override({ color }));
+        }
 
         return model_transform
             .times(Mat4.translation(-1, 1, 0))
