@@ -26,6 +26,7 @@ export class Assignment3 extends Scene {
             test2: new Material(new Gouraud_Shader(),
                 {ambient: .4, diffusivity: .6, color: hex_color("#992828")}),
             ring: new Material(new Ring_Shader()),
+            sun: new Material(new Gouraud_Shader(), { ambient: 1 })
             // TODO:  Fill in as many additional material objects as needed in this key/value table.
             //        (Requirement 4)
         }
@@ -57,21 +58,28 @@ export class Assignment3 extends Scene {
 
         program_state.projection_transform = Mat4.perspective(
             Math.PI / 4, context.width / context.height, .1, 1000);
-
-        // TODO: Create Planets (Requirement 1)
-        // this.shapes.[XXX].draw([XXX]) // <--example
-
+        
         // TODO: Lighting (Requirement 2)
         const light_position = vec4(0, 5, 5, 1);
         // The parameters of the Light are: position, color, size
-        program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
+        // program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
+        program_state.lights = [];
 
         // TODO:  Fill in matrix operations and drawing code to draw the solar system scene (Requirements 3 and 4)
         const t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
-        const yellow = hex_color("#fac91a");
+        
+        // Sinusoidally varies from 0 to 1 with a period of 10s.
+        const sun_growth = 0.5 - 0.5 * Math.cos(2 * Math.PI * t / 10);
+        const red = hex_color("#ff0000");
+        const white = hex_color("#ffffff");
+        const sun_color = red.plus(white.minus(red).times(sun_growth));
+        const sun_radius = 1 + 2 * sun_growth;
+
         let model_transform = Mat4.identity();
 
-        this.shapes.torus.draw(context, program_state, model_transform, this.materials.test.override({color: yellow}));
+        this.shapes.sphere.draw(context, program_state,
+            Mat4.scale(sun_radius, sun_radius, sun_radius).times(model_transform),
+            this.materials.sun.override({ color: sun_color }));
     }
 }
 
