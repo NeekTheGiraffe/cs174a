@@ -31,7 +31,7 @@ export class Assignment3 extends Scene {
                 {ambient: .4, diffusivity: .6, color: hex_color("#ffffff")}),
             test2: new Material(new Gouraud_Shader(),
                 {ambient: .4, diffusivity: .6, color: hex_color("#992828")}),
-            ring: new Material(new Ring_Shader()),
+            ring: new Material(new Ring_Shader(), { ambient: 1, diffusivity: 0, specularity: 0 }),
             sun: new Material(new defs.Phong_Shader(), { ambient: 1 }),
             // TODO:  Fill in as many additional material objects as needed in this key/value table.
             //        (Requirement 4)
@@ -95,14 +95,18 @@ export class Assignment3 extends Scene {
             this.materials.sun.override({ color: sun_color }));
 
         const planet_1_theta = t * 2 * Math.PI / 16;
+        const planet_1_transform = Mat4.rotation(planet_1_theta, 0, 1, 0).times(Mat4.translation(5, 0, 0)).times(model_transform);
+        this.planet_1 = planet_1_transform;
         this.shapes.planet_1.draw(context, program_state,
-            Mat4.rotation(planet_1_theta, 0, 1, 0).times(Mat4.translation(5, 0, 0)).times(model_transform),
+            planet_1_transform,
             this.materials.planet_1);
         
         const planet_2_material = t % 2 < 1 ? this.materials.planet_2_gouraud : this.materials.planet_2_phong;
         const planet_2_theta = t * 2 * Math.PI / 22;
+        const planet_2_transform = Mat4.rotation(planet_2_theta, 0, 1, 0).times(Mat4.translation(8, 0, 0)).times(model_transform);
+        this.planet_2 = planet_2_transform;
         this.shapes.planet_2.draw(context, program_state,
-            Mat4.rotation(planet_2_theta, 0, 1, 0).times(Mat4.translation(8, 0, 0)).times(model_transform),
+            planet_2_transform,
             planet_2_material);
 
         const planet_3_theta = t * 2 * Math.PI / 30;
@@ -111,6 +115,7 @@ export class Assignment3 extends Scene {
             .times(Mat4.translation(11, 0, 0))
             .times(Mat4.rotation(planet_3_rotation_theta, 0, 1, 0))
             .times(model_transform);
+        this.planet_3 = planet_3_transform;
         this.shapes.planet_3.draw(context, program_state,
             planet_3_transform,
             this.materials.planet_3);
@@ -120,15 +125,23 @@ export class Assignment3 extends Scene {
 
         const planet_4_theta = t * 2 * Math.PI / 39;
         const planet_4_transform = Mat4.rotation(planet_4_theta, 0, 1, 0).times(Mat4.translation(14, 0, 0)).times(model_transform);
+        this.planet_4 = planet_4_transform;
         this.shapes.planet_4.draw(context, program_state,
             planet_4_transform,
             this.materials.planet_4);
 
         const moon_theta = t * 2 * Math.PI / 14;
         const moon_transform = planet_4_transform.times(Mat4.rotation(moon_theta, 0, 1, 0)).times(Mat4.translation(2, 0, 0));
+        this.moon = moon_transform;
         this.shapes.moon.draw(context, program_state,
             moon_transform,
             this.materials.moon);
+
+        if (this.attached) {
+            const desired = this.attached() ? Mat4.inverse(this.attached().times(Mat4.translation(0,0,5))) : this.initial_camera_location;
+            
+            program_state.set_camera(desired.map((x, i) => Vector.from(program_state.camera_inverse[i]).mix(x, 0.1)));
+        }
     }
 }
 
