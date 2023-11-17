@@ -15,16 +15,18 @@ export class Assignment4 extends Scene {
         // constructor(): Scenes begin by populating initial values like the Shapes and Materials they'll need.
         super();
 
-        // TODO:  Create two cubes, including one with the default texture coordinates (from 0 to 1), and one with the modified
-        //        texture coordinates as required for cube #2.  You can either do this by modifying the cube code or by modifying
-        //        a cube instance's texture_coords after it is already created.
         this.shapes = {
             box_1: new Cube(),
             box_2: new Cube(),
             axis: new Axis_Arrows()
         }
-        console.log(this.shapes.box_1.arrays.texture_coord)
+        // Modify texture coordinates for Requirement 2
+        console.log(this.shapes.box_2.arrays.texture_coord);
+        this.shapes.box_2.arrays.texture_coord.forEach(p => p.scale_by(2));
 
+        this.box_1_theta = 0;
+        this.box_2_theta = 0;
+        this.spin = false;
 
         // TODO:  Create the materials required to texture both cubes with the correct images and settings.
         //        Make each Material from the correct shader.  Phong_Shader will work initially, but when
@@ -42,12 +44,12 @@ export class Assignment4 extends Scene {
             fruit: new Material(new Textured_Phong(), {
                 color: hex_color("#000000"),
                 ambient: 1.0,
-                texture: new Texture("assets/fruit.jpg"),
+                texture: new Texture("assets/fruit.jpg", "NEAREST"),
             }),
             giraffe: new Material(new Textured_Phong(), {
                 color: hex_color("#000000"),
                 ambient: 1.0,
-                texture: new Texture("assets/giraffe.jpg"),
+                texture: new Texture("assets/giraffe.jpg", "LINEAR_MIPMAP_LINEAR"),
             }),
         }
 
@@ -56,6 +58,7 @@ export class Assignment4 extends Scene {
 
     make_control_panel() {
         // TODO:  Implement requirement #5 using a key_triggered_button that responds to the 'c' key.
+        this.key_triggered_button("Cube rotation", ["c"], () => this.spin = !this.spin);
     }
 
     display(context, program_state) {
@@ -72,14 +75,24 @@ export class Assignment4 extends Scene {
         program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
 
         let t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
-        let model_transform = Mat4.identity();
+        const box_1_rpm = 20;
+        const box_2_rpm = 30;
 
-        // TODO:  Draw the required boxes. Also update their stored matrices.
-        // You can remove the folloeing line.
-        const box_1_transform = Mat4.translation(-2, 0, 0).times(model_transform);
-        this.shapes.box_1.draw(context, program_state, box_1_transform, this.materials.fruit);
+        if (this.spin) {
+            this.box_1_theta += box_1_rpm * dt * 2 * Math.PI / 60;
+            this.box_2_theta += box_2_rpm * dt * 2 * Math.PI / 60;
+        }
+
+        let model_transform = Mat4.identity();
         
-        const box_2_transform = Mat4.translation(2, 0, 0).times(model_transform);
+        const box_1_transform = Mat4.translation(-2, 0, 0)
+            .times(Mat4.rotation(this.box_1_theta, 1, 0, 0))
+            .times(model_transform);
+            this.shapes.box_1.draw(context, program_state, box_1_transform, this.materials.fruit);
+            
+        const box_2_transform = Mat4.translation(2, 0, 0)
+            .times(Mat4.rotation(this.box_2_theta, 0, 1, 0))
+            .times(model_transform);
         this.shapes.box_2.draw(context, program_state, box_2_transform, this.materials.giraffe);
         //this.shapes.axis.draw(context, program_state, model_transform, this.materials.phong.override({color: hex_color("#ffff00")}));
     }
