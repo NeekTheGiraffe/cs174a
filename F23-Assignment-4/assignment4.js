@@ -21,7 +21,7 @@ export class Assignment4 extends Scene {
             axis: new Axis_Arrows()
         }
         // Modify texture coordinates for Requirement 2
-        console.log(this.shapes.box_2.arrays.texture_coord);
+        //console.log(this.shapes.box_2.arrays.texture_coord);
         this.shapes.box_2.arrays.texture_coord.forEach(p => p.scale_by(2));
 
         this.box_1_theta = 0;
@@ -41,12 +41,12 @@ export class Assignment4 extends Scene {
                 texture: new Texture("assets/stars.png")
             }),
 
-            fruit: new Material(new Textured_Phong(), {
+            fruit: new Material(new Texture_Rotate(), {
                 color: hex_color("#000000"),
                 ambient: 1.0,
                 texture: new Texture("assets/fruit.jpg", "NEAREST"),
             }),
-            giraffe: new Material(new Textured_Phong(), {
+            giraffe: new Material(new Texture_Scroll_X(), {
                 color: hex_color("#000000"),
                 ambient: 1.0,
                 texture: new Texture("assets/giraffe.jpg", "LINEAR_MIPMAP_LINEAR"),
@@ -75,6 +75,9 @@ export class Assignment4 extends Scene {
         program_state.lights = [new Light(light_position, color(1, 1, 1, 1), 1000)];
 
         let t = program_state.animation_time / 1000, dt = program_state.animation_delta_time / 1000;
+        // Reset animation time so the value doesn't grow indefinitely
+        program_state.animation_time = program_state.animation_time % 4000;
+
         const box_1_rpm = 20;
         const box_2_rpm = 30;
 
@@ -94,6 +97,7 @@ export class Assignment4 extends Scene {
             .times(Mat4.rotation(this.box_2_theta, 0, 1, 0))
             .times(model_transform);
         this.shapes.box_2.draw(context, program_state, box_2_transform, this.materials.giraffe);
+
         //this.shapes.axis.draw(context, program_state, model_transform, this.materials.phong.override({color: hex_color("#ffff00")}));
     }
 }
@@ -109,7 +113,14 @@ class Texture_Scroll_X extends Textured_Phong {
             
             void main(){
                 // Sample the texture image in the correct place:
-                vec4 tex_color = texture2D( texture, f_tex_coord);
+                vec2 final_coord = f_tex_coord + vec2(-2.0 * animation_time, 0.0);
+                vec4 tex_color = texture2D( texture, final_coord );
+
+                vec2 final_coord_mod = mod(final_coord, 1.0);
+                if ( (final_coord_mod.x > 0.15 && final_coord_mod.x < 0.85 && final_coord_mod.y > 0.15 && final_coord_mod.y < 0.85) &&
+                    !(final_coord_mod.x > 0.25 && final_coord_mod.x < 0.75 && final_coord_mod.y > 0.25 && final_coord_mod.y < 0.75) )
+                    tex_color = vec4(0.0, 0.0, 0.0, 1.0);
+                
                 if( tex_color.w < .01 ) discard;
                                                                          // Compute an initial (ambient) color:
                 gl_FragColor = vec4( ( tex_color.xyz + shape_color.xyz ) * ambient, shape_color.w * tex_color.w ); 
@@ -129,7 +140,14 @@ class Texture_Rotate extends Textured_Phong {
             uniform float animation_time;
             void main(){
                 // Sample the texture image in the correct place:
-                vec4 tex_color = texture2D( texture, f_tex_coord );
+                float theta = animation_time * 2.0 * 3.14159265 / 4.0;
+                vec2 final_coord = mat2(cos(theta), -sin(theta), sin(theta), cos(theta)) * (f_tex_coord + vec2(-0.5, -0.5)) + vec2(0.5, 0.5);
+                vec4 tex_color = texture2D( texture, final_coord );
+
+                if ( (final_coord.x > 0.15 && final_coord.x < 0.85 && final_coord.y > 0.15 && final_coord.y < 0.85) &&
+                    !(final_coord.x > 0.25 && final_coord.x < 0.75 && final_coord.y > 0.25 && final_coord.y < 0.75) )
+                    tex_color = vec4(0.0, 0.0, 0.0, 1.0);
+
                 if( tex_color.w < .01 ) discard;
                                                                          // Compute an initial (ambient) color:
                 gl_FragColor = vec4( ( tex_color.xyz + shape_color.xyz ) * ambient, shape_color.w * tex_color.w ); 
