@@ -1,5 +1,6 @@
 *.zip
 __MACOSX/
+*/.vscode/
 
 # Temporary Word files
 **/~*.docx
